@@ -1,35 +1,40 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import MapComponent from "./components/Mapa";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  // useState es un hook de React para manejar estado en componentes funcionales
+  const [showMap, setShowMap] = useState(true);
+  const [mapStyle, setMapStyle] = useState("streets-navigation-vector");
+
+  // Función para cambiar el estilo del mapa
+  const changeMapStyle = (style) => {
+    setMapStyle(style);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="App">
+      {/* <h1>React con ArcGIS Maps</h1> */}
+
+      <div className="controls">
+        <button onClick={() => setShowMap(!showMap)}>
+          {showMap ? "Ocultar Mapa" : "Mostrar Mapa"}
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+
+        <div className="style-buttons">
+          <button onClick={() => changeMapStyle("streets-navigation-vector")}>
+            Calles
+          </button>
+          <button onClick={() => changeMapStyle("satellite")}>Satélite</button>
+          <button onClick={() => changeMapStyle("topo-vector")}>
+            Topográfico
+          </button>
+        </div>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+
+      {showMap && <MapComponent mapStyle={mapStyle} />}
+    </div>
+  );
 }
 
-export default App
+export default App;
