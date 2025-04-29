@@ -1,69 +1,91 @@
-import React, { useEffect, useRef } from "react";
-import WebMap from "@arcgis/core/WebMap";
+import React, { useEffect, useRef, useState } from "react";
+import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
-import Graphic from "@arcgis/core/Graphic";
-import Point from "@arcgis/core/geometry/Point";
+import SceneView from "@arcgis/core/views/SceneView";
+import Home from "@arcgis/core/widgets/Home"; // ✅ Import correcto
 
-function Mapa({ mapStyle }) {
-  const mapDiv = useRef(null);
+const Mapa = ({ setMapView, setMapSceneView, baseMap }) => {
+  const mapRef = useRef(null);
+  const mapRef3D = useRef(null);
+  const [is3DView, setIs3DView] = useState(false);
+  const [isMapVisible, setIsMapVisible] = useState(true);
+
   const viewRef = useRef(null);
-  const webmapRef = useRef(null);
+  const view3DRef = useRef(null);
+
+  const toggleView = () => setIs3DView((prev) => !prev);
+  const toggleMapVisibility = () => setIsMapVisible((prev) => !prev);
 
   useEffect(() => {
-    if (mapDiv.current) {
-      webmapRef.current = new WebMap({
-        basemap: mapStyle,
-      });
+    if (!mapRef.current || !mapRef3D.current) return;
 
-      viewRef.current = new MapView({
-        container: mapDiv.current,
-        map: webmapRef.current,
-        center: [-100, 40],
-        zoom: 4,
-      });
+    const mapConfig = {
+      basemap: baseMap?.basemap || "gray-vector",
+    };
 
-      // Añadir un marcador cuando la vista esté lista
-      viewRef.current.when(() => {
-        const point = new Point({
-          longitude: -100,
-          latitude: 40,
-        });
+    viewRef.current = new MapView({
+      container: mapRef.current,
+      map: new Map(mapConfig),
+      center: [-2.92528, 43.26271],
+      zoom: 12,
+    });
 
-        const marker = new Graphic({
-          geometry: point,
-          symbol: {
-            type: "simple-marker",
-            color: [226, 119, 40],
-            outline: {
-              color: [255, 255, 255],
-              width: 2,
-            },
-          },
-        });
+    view3DRef.current = new SceneView({
+      container: mapRef3D.current,
+      map: new Map({ ...mapConfig, ground: "world-elevation" }),
+      center: [-2.92528, 43.26271],
+      zoom: 12,
+    });
 
-        viewRef.current.graphics.add(marker);
-      });
+    const homeWidget = new Home({
+      view: viewRef.current,
+    });
+    viewRef.current.ui.add(homeWidget, "top-left");
 
-      return () => {
-        if (viewRef.current) {
-          viewRef.current.destroy();
-        }
-      };
-    }
-  }, []);
+    setMapView(viewRef.current);
+    setMapSceneView(view3DRef.current);
+
+    mapRef3D.current.style.display = "none";
+
+    return () => {
+      if (viewRef.current) viewRef.current.destroy();
+      if (view3DRef.current) view3DRef.current.destroy();
+    };
+  }, [baseMap, setMapView, setMapSceneView]);
 
   useEffect(() => {
-    if (webmapRef.current) {
-      webmapRef.current.basemap = mapStyle;
+    if (!mapRef.current || !mapRef3D.current) return;
+
+    if (is3DView) {
+      mapRef.current.style.display = "none";
+      mapRef3D.current.style.display = "block";
+    } else {
+      mapRef.current.style.display = "block";
+      mapRef3D.current.style.display = "none";
     }
-  }, [mapStyle]);
+  }, [is3DView]);
 
   return (
-    <div
-      ref={mapDiv}
-      style={{ height: "calc(100vh - 100px)", width: "100%" }}
-    />
+    <div className="map-container">
+      <div className="map-controls">
+        <button className="toggle-button" onClick={toggleView}>
+          Cambiar a vista {is3DView ? "2D" : "3D"}
+        </button>
+      </div>
+
+      <div
+        ref={mapRef}
+        className={`map-view ${!isMapVisible ? "hidden" : ""}`}
+        style={{ height: "80vh", width: "100%" }}
+      />
+
+      <div
+        ref={mapRef3D}
+        className={`scene-view ${!isMapVisible ? "hidden" : ""}`}
+        style={{ height: "80vh", width: "100%" }}
+      />
+    </div>
   );
-}
+};
 
 export default Mapa;

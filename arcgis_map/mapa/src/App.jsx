@@ -1,39 +1,33 @@
 import { useState } from "react";
-import MapComponent from "./components/Mapa";
+import Mapa from "./components/Mapa";
+import Capa from "./components/Capa";
 import "./App.css";
 
 function App() {
   // useState es un hook de React para manejar estado en componentes funcionales
-  const [showMap, setShowMap] = useState(true);
-  const [mapStyle, setMapStyle] = useState("streets-navigation-vector");
+  const [mapView, setMapView] = useState(null);
+  const [mapSceneView, setMapSceneView] = useState(null);
 
-  // Función para cambiar el estilo del mapa
-  const changeMapStyle = (style) => {
-    setMapStyle(style);
-  };
+  //Base map
+  const [baseMap, setBaseMap] = useState({ basemap: "gray-vector" });
 
   return (
-    <div className="App">
-      {/* <h1>React con ArcGIS Maps</h1> */}
-
-      <div className="controls">
-        <button onClick={() => setShowMap(!showMap)}>
-          {showMap ? "Ocultar Mapa" : "Mostrar Mapa"}
-        </button>
-
-        <div className="style-buttons">
-          <button onClick={() => changeMapStyle("streets-navigation-vector")}>
-            Calles
-          </button>
-          <button onClick={() => changeMapStyle("satellite")}>Satélite</button>
-          <button onClick={() => changeMapStyle("topo-vector")}>
-            Topográfico
-          </button>
-        </div>
+    <>
+      <div>
+        {/* <Header /> */}
+        <Capa
+          mapView={mapView}
+          mapSceneView={mapSceneView}
+          setBaseMap={setBaseMap}
+        />
+        {/* <Fichero  mapView={mapView} mapSceneView={mapSceneView} setBaseMap={setBaseMap}/> */}
+        <Mapa
+          setMapView={setMapView}
+          setMapSceneView={setMapSceneView}
+          baseMap={baseMap}
+        />
       </div>
-
-      {showMap && <MapComponent mapStyle={mapStyle} />}
-    </div>
+    </>
   );
 }
 
